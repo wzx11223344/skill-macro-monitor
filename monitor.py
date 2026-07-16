@@ -65,9 +65,15 @@ def _safe_fetch(func, cache_key: str, **kwargs) -> Optional[pd.DataFrame]:
     cached = cache_get(cache_key)
     if cached and "df" in cached:
         try:
-            return pd.read_json(cached["df"], orient="table")
-        except ValueError:
-            return pd.DataFrame(cached["df"])
+            return pd.read_json(cached["df"], orient="records")
+        except (ValueError, KeyError) as e:
+            try:
+                return pd.read_json(cached["df"], orient="table")
+            except (ValueError, KeyError):
+                try:
+                    return pd.DataFrame(cached["df"])
+                except Exception:
+                    return None
 
     try:
         df = func(**kwargs)
@@ -78,7 +84,10 @@ def _safe_fetch(func, cache_key: str, **kwargs) -> Optional[pd.DataFrame]:
     if df is None or df.empty:
         return None
 
-    cache_set(cache_key, {"df": df.to_json(orient="table", force_ascii=False, date_format="iso")})
+    try:
+        cache_set(cache_key, {"df": df.to_json(orient="records", force_ascii=False, date_format="iso")})
+    except Exception as exc:
+        print(f"[WARN] 缓存写入失败 ({cache_key}): {exc}", file=sys.stderr)
     return df
 
 

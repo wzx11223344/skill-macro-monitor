@@ -1,5 +1,7 @@
 # 宏观经济监测 (Macro Economy Monitor)
 
+[![CI](https://github.com/wzx11223344/skill-macro-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/wzx11223344/skill-macro-monitor/actions/workflows/ci.yml)
+
 AI 代理技能 —— 自动抓取中国宏观经济核心指标，生成结构化监测简报。
 
 ## 功能概述
@@ -26,13 +28,16 @@ AI 代理技能 —— 自动抓取中国宏观经济核心指标，生成结构
 
 ## 快速开始
 
-### 1. 安装依赖
+### 安装
 
 ```bash
+# 从源码安装
+git clone https://github.com/wzx11223344/skill-macro-monitor.git
+cd skill-macro-monitor
 pip install -r requirements.txt
 ```
 
-### 2. 运行
+### 运行
 
 ```bash
 # 日报
@@ -45,11 +50,35 @@ python monitor.py weekly
 python monitor.py monthly --output report.html
 ```
 
-### 3. 作为 Skill 注册到 AI 代理
+### 测试
+
+运行单元测试：
+
+```bash
+pip install pytest
+pytest tests/ -v
+```
+
+运行 linting：
+
+```bash
+pip install flake8
+flake8 monitor.py tests/ --max-line-length=120
+```
+
+### 作为 Skill 注册到 AI 代理
 
 将本目录放置于代理的 skills 目录下，并在代理配置中引用 `SKILL.md`。
 
 当用户提问包含"宏观经济""PMI""CPI""经济简报"等关键词时，代理自动调用本技能抓取最新数据并生成回复。
+
+## CI/CD
+
+本项目使用 GitHub Actions 进行持续集成，在每次 push 和 PR 到 main 分支时自动运行：
+
+- **Python 3.10 / 3.11 / 3.12** 矩阵测试
+- **pytest** 单元测试
+- **flake8** 代码风格检查 (max-line-length=120, permissive config)
 
 ## 架构设计
 
@@ -77,10 +106,24 @@ monitor.py
 | 宽信用 | 社融增速上行 |
 | 融资需求不足 | 社融增速放缓 |
 
+## 项目结构
+
+```
+skill-macro-monitor/
+├── .github/workflows/ci.yml  # CI/CD 配置
+├── pyproject.toml             # 项目配置 (pytest + flake8)
+├── SKILL.md                   # ClawHub 技能定义
+├── README.md                  # 项目文档
+├── requirements.txt           # Python 依赖
+├── monitor.py                 # CLI 入口脚本
+└── tests/
+    └── test_main.py           # 单元测试
+```
+
 ## 依赖
 
-- Python >= 3.8
-- akshare >= 1.10.0
+- Python >= 3.10
+- akshare >= 1.10.0, < 2.0.0
 - pandas >= 2.0.0
 - plotly >= 5.0.0
 - jinja2 >= 3.0
